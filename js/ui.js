@@ -278,7 +278,11 @@ function autoFetch(element,cb,threshold,direction){
 }
 
 function miniTab(cb,opener,closeCB){
-    //constructor for minitabs
+    /*constructor for minitabs
+     the cb parameter is a callback to call each time the tab is opened
+      the opener parameter is an element that opens the tab onclick
+      the closeCB parameter is a callback to call when the tab is closed
+    */
     var self = this
     var element = document.createElement("div")
     this.construct(this)
@@ -289,7 +293,8 @@ function miniTab(cb,opener,closeCB){
     this.bigScreenClass = ["bigscreen-minitab"]
     this.smallScreenClass = ["smallscreen-minitab","absolute","bottom","left","full-width","minor-pad"]
     var head = document.createElement("div")
-    var closeBtn = document.createElement("button"); closeBtn.innerHTML = "X"; closeBtn.className = "cancel-btn"
+    var closeBtn = document.createElement("button"); closeBtn.innerHTML = "X"; 
+    closeBtn.className = "cancel-btn pointer"
     head.appendChild(closeBtn); element.appendChild(head)
     this.head = head
     this.closeBtn = closeBtn
@@ -336,7 +341,8 @@ function miniTab(cb,opener,closeCB){
 function slider(container){
     /*constructor for sliders*/
     var self = this
-    var sliderContainer = document.createElement("div"); sliderContainer.className = "slider-container"
+    var sliderContainer = document.createElement("div");
+    sliderContainer.className = "slider-container"
     var slider = document.createElement("div"); slider.className = "slide"
     var forwardBtn = document.createElement("a"); forwardBtn.innerHTML = "&#8250;";
     forwardBtn.className = "nav-btn round right pointer";
@@ -387,5 +393,67 @@ function slider(container){
         else{changeClass(this.backBtn,"none","")}
         if(this.currentItem >= items.length - 1){changeClass(this.forwardBtn,"","none")}
         else{changeClass(this.forwardBtn,"none","")}
+    }
+}
+
+function write(node,parent,delay,cursorColor){
+    var cursor = document.createElement("span"); cursor.innerHTML = "|"
+    cursor.className = "blink"
+    delay = (delay == undefined)? 100 : delay
+    try{
+        cursor.style.fontSize = "inherit"
+        cursor.style.fontWeight = "bold"
+        cursor.style.color = (cursorColor == undefined)? "#555" : cursorColor
+    }
+    catch(err){}
+    console.log("about to start writing process")
+    writeProcess(node,parent)
+    function writeProcess(node,parent,startTime,shouldTime){
+        if(typeof node == "string"){
+            console.log("writing string with value " + "'" + node + "'" + " to element ",parent)
+            var i = 0; node = node.split(""); parent.appendChild(cursor)
+            if(node.length < 1){return}
+            function writeString(){
+                remove(cursor)
+                if(i in node){
+                    parent.innerHTML += node[i]
+                    parent.appendChild(cursor)
+                    i++
+                    setTimeout(writeString,delay)
+                }
+                else{
+                    //console.log(`finished writing string with value '${node}' to element `,parent,` estimated time is : ${shouldTime} but took ${Number(new Date()) - startTime}`)
+                }
+            }
+            setTimeout(writeString,delay); return 
+        }
+        function calcInterval(){
+            if(typeof current == "string"){
+                interval = current.length * delay
+                //console.log("calculating time it will take to write string '" + 
+                //current +"' of length " + current.length.toString() + " to element ",nodeCopy,` and it should take ${interval} milliseconds`)
+            }
+            else{
+                interval = current.innerText
+                interval = (interval == undefined)? current.innerHTML : interval
+                var n= interval
+                interval = single(interval," ").length * delay
+                //console.log(`calculating time it will take to write string ${n}, and it should take ${interval} milliseconds`)
+            }
+        }
+        function writeNode(){
+            if(i in childNodes){
+                current = childNodes[i]
+                if(current.nodeName == "#text"){current = trim(current.nodeValue);}
+                calcInterval()
+                var startTime = Number(new Date())
+                var calculated = interval
+                writeProcess(current,nodeCopy,startTime,calculated); i++; 
+                setTimeout(writeNode,interval)
+            }
+        }
+        var childNodes = node.childNodes; var nodeCopy = node.cloneNode(true)
+        nodeCopy.innerHTML = ""; parent.appendChild(nodeCopy);
+        var i = 0; var interval = 0; var current; writeNode()
     }
 }

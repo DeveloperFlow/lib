@@ -97,6 +97,13 @@ function remove(element){
 		catch(err){}
 	}
 }
+function removeChildren(element){
+	/*removes all element nodes of an element*/
+	var children = element.children
+	for(var i = 0; i < children.length;){
+		remove(children[i])
+	}
+}
 function append(parent,elements){
 	if(elements instanceof Array){
 		for(var i=0; i < elements.length; i++){
@@ -119,14 +126,55 @@ function customAlert(msg){
 	setTimeout(function(){clearInterval(interval); remove(container)},alertTime)
 }
 function copy(text,cb){
+	if(!isFunction(cb)){cb = defaultCb}
 	try{
 		navigator.clipboard.writeText(text)
-		.then(defaultCb)
+		.then(cb)
 	}
-	catch(err){}
+	catch(err){
+		document.execCommand("copy",false,text)
+		console.log(document.execCommand)
+	}
 	function defaultCb(){
 		customAlert("Item copied to clipboard")
 	}
+}
+function inView(element){
+	/*checks if an element is in the visible view port*/
+	var coord = element.getBoundingClientRect()
+	var winDim = windowDim()
+	return (coord.top < winDim.h || coord.bottom < winDim.h) && 
+	(coord.left < winDim.w || coord.right < winDim.w) 
+}
+function scrollNShow(nodes){
+	var defaultClass = "scroll-n-view"
+	var visibleClass = "visible"
+	var invisibleClass = "invisible"
+	var run = true
+	var throttleDuration = 300 //in milliseconds
+	nodes = (nodes)? nodes : document.getElementsByClassName(defaultClass)
+	for(var i = 0; i < nodes.length; i++){
+		changeClass(nodes[i],"",[invisibleClass,defaultClass])
+	}
+	function appear(node){
+		changeClass(node,"",visibleClass)
+	}
+	function disappear(node){
+		changeClass(node,visibleClass,"")
+	}
+	function handleScroll(){
+		for(var i = 0; i < nodes.length; i++){
+			var node = nodes[i]
+			if(inView(node)){appear(node)}
+			else{disappear(node)}
+		}
+	}
+	function scrollThrottle(){
+		if(!run){return}
+		run = false
+		setTimeout(function(){run = true; handleScroll()},throttleDuration)
+	}
+	addEvent(document,"scroll",scrollThrottle)
 }
 //handles movement
 function moveTo(element,x,y){

@@ -39,6 +39,7 @@
 .bold{font-weight: bold;}
 .icon{width:20%; width:8vw; max-width:20px}
 .icon.mid{max-width:30px}
+.icon.max{max-width:50px}
 .texticon{font-size:25px; font-weight: bold;}
 .pointer{cursor:pointer}
 .clear-fix{clear:both}
@@ -70,18 +71,22 @@
 input.error{border-color:#f00 !important;}
 input.normal{border-bottom:2px solid #ffb630}
 button.normal{background-color: #c8c8ff;}
-
+.blink{animation-name:blink; animation-duration:1s; animation-iteration-count: infinite;
+animation-timing-function: ease-in-out;}
+.invisible{opacity:0}
+.scroll-n-view{transition: .5s;}
+.scroll-n-view.visible{opacity:1}
 /*special*/
     /*toggle*/
 .toggle-container{width:40px; height:20px; border-radius: 25px;
-    background-color: #c8c8ff; display:flex; align-items: center;
+    background-color: #c8c8ff; display:flex; align-items: center; position:relative
 }
 .toggle-container input[type=checkbox]{border:none; opacity:0; 
     cursor:pointer; height:100%; width:100%; margin:0; padding:0;
-    box-sizing: border-box; z-index:1
+    box-sizing: border-box; z-index:1; position: absolute;
 }
 .toggle-container span.round{background-color: #fff; height:20px; width:20px;
-    transition:.5s;
+    transition:.5s; position:absolute; left:0
 }
 .toggle-container input[type=checkbox]:checked + span.round{
     background-color: #ffb630; transform:translate(20px,0)
@@ -99,7 +104,11 @@ margin-left:2%}
     50%{opacity:0.3}
     100%{opacity:1}
 }
-
+@keyframes blink{
+    0%{opacity:1}
+    50%{opacity:0}
+    100%{opacity:1}
+}
 /*transitions*/
 .zoom{transition: transform .2s;}
 

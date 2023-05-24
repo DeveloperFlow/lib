@@ -1,4 +1,4 @@
-.window{height:100%; width:100%; position:fixed; z-index:5}
+.window{height:100%; width:100%; position:fixed; z-index:4}
 .curtain{background-color: rgba(100,100,100,0.5);}
 .option-elem{max-height:70vh; z-index:2; position:absolute; background-color: #fff; transition: none; height:auto;
 z-index:5}
@@ -10,9 +10,9 @@ z-index:5}
 }
 
 /*mini tabs*/
-.minitab{width:100%; overflow:auto; max-height:85%; z-index:5;
-    background-color: #fff; padding:1%; border-radius: 8px; box-shadow:5px 5px #888}
-.bigscreen-minitab{max-width:500px; height:400px; margin:auto}
+.minitab{width:100%; overflow:auto; max-height:85%; z-index:5; 
+    background-color: #fff; padding:1%; border-radius: 8px;}
+.bigscreen-minitab{max-width:500px; height:400px; margin:auto; position: relative;}
 .smallscreen-minitab{border-radius:25px 25px 0px 0px; padding:3%}
 
 /*image sliders*/
