@@ -78,7 +78,7 @@ animation-timing-function: ease-in-out;}
 .scroll-n-view.visible{opacity:1}
 /*special*/
     /*toggle*/
-.toggle-container{width:40px; height:20px; border-radius: 25px;
+.toggle-container{width:40px; height:20px; border-radius: 25px; display:block;
     background-color: #c8c8ff; display:flex; align-items: center; position:relative
 }
 .toggle-container input[type=checkbox]{border:none; opacity:0; 

@@ -397,63 +397,64 @@ function slider(container){
 }
 
 function write(node,parent,delay,cursorColor){
-    var cursor = document.createElement("span"); cursor.innerHTML = "|"
-    cursor.className = "blink"
-    delay = (delay == undefined)? 100 : delay
+    var cursor = document.createElement("span"); cursor.innerHTML = "|"; cursor.className = "blink"
+    delay = (delay == undefined)? 100 : delay // in milliseconds
+    var nodeMap = []
     try{
         cursor.style.fontSize = "inherit"
         cursor.style.fontWeight = "bold"
         cursor.style.color = (cursorColor == undefined)? "#555" : cursorColor
     }
     catch(err){}
-    console.log("about to start writing process")
     writeProcess(node,parent)
-    function writeProcess(node,parent,startTime,shouldTime){
+    function next(){
+        if(nodeMap.length < 1){return}
+        var newestIndex = nodeMap.length - 1
+        var newest = nodeMap[newestIndex]
+        var children = newest.children
+        var parent = newest.parent
+        var newestNode = children[0]
+        newestNode = parseNode(newestNode)
+        newest.children = children.slice(1)
+        if(newest.children.length < 1){nodeMap.length = newestIndex}
+        writeProcess(newestNode,parent)
+    }
+    function parseNode(currentNode){
+        if(currentNode.nodeName == "#text"){
+            currentNode = currentNode.nodeValue
+            currentNode = currentNode.replace(/\n/g,"")
+            currentNode = single(currentNode," ")
+        }
+        return currentNode
+    }
+    function writeProcess(node,parent){
         if(typeof node == "string"){
-            console.log("writing string with value " + "'" + node + "'" + " to element ",parent)
-            var i = 0; node = node.split(""); parent.appendChild(cursor)
-            if(node.length < 1){return}
+            var i = 0; node = node.split("")
+            if(node.length < 1){next(); return}
+            parent.appendChild(cursor)
             function writeString(){
                 remove(cursor)
                 if(i in node){
                     parent.innerHTML += node[i]
-                    parent.appendChild(cursor)
-                    i++
-                    setTimeout(writeString,delay)
+                    parent.appendChild(cursor); i++; setTimeout(writeString,delay)
                 }
-                else{
-                    //console.log(`finished writing string with value '${node}' to element `,parent,` estimated time is : ${shouldTime} but took ${Number(new Date()) - startTime}`)
-                }
+                else{next()}
             }
             setTimeout(writeString,delay); return 
         }
-        function calcInterval(){
-            if(typeof current == "string"){
-                interval = current.length * delay
-                //console.log("calculating time it will take to write string '" + 
-                //current +"' of length " + current.length.toString() + " to element ",nodeCopy,` and it should take ${interval} milliseconds`)
+        var childNodes = node.childNodes
+        var nodeCopy = node.cloneNode(true)
+        nodeCopy.innerHTML = ""; 
+        parent.appendChild(nodeCopy);
+        if(childNodes.length > 0){
+            var currentNode = parseNode(childNodes[0])
+            var children = []
+            for(var i = 1; i < childNodes.length; i++){
+                children.push(childNodes[i])
             }
-            else{
-                interval = current.innerText
-                interval = (interval == undefined)? current.innerHTML : interval
-                var n= interval
-                interval = single(interval," ").length * delay
-                //console.log(`calculating time it will take to write string ${n}, and it should take ${interval} milliseconds`)
-            }
+            if(children.length > 0){nodeMap.push({parent:nodeCopy,children:children})}
+            writeProcess(currentNode,nodeCopy)
         }
-        function writeNode(){
-            if(i in childNodes){
-                current = childNodes[i]
-                if(current.nodeName == "#text"){current = trim(current.nodeValue);}
-                calcInterval()
-                var startTime = Number(new Date())
-                var calculated = interval
-                writeProcess(current,nodeCopy,startTime,calculated); i++; 
-                setTimeout(writeNode,interval)
-            }
-        }
-        var childNodes = node.childNodes; var nodeCopy = node.cloneNode(true)
-        nodeCopy.innerHTML = ""; parent.appendChild(nodeCopy);
-        var i = 0; var interval = 0; var current; writeNode()
+        else{next()}
     }
 }

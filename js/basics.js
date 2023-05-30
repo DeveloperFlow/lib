@@ -1,4 +1,18 @@
-
+//for browser compatibility
+if(!("getElementsByClassName" in document)){
+	document.getElementsByClassName = function(className){
+		var root = document.getElementsByTagName("html")[0]
+		var elements = []
+		function proccess(element){
+			if(hasClass(element,className)){elements.push(element)}
+			var children = element.children
+			for(var i = 0; i < children.length; i++){
+				proccess(children[i])
+			}
+		}
+		return elements
+	}
+}
 //DOM functions
 function elementDim(element,dim){
     /*calculates and returns the specified dimension of an element or both
@@ -151,7 +165,7 @@ function scrollNShow(nodes){
 	var visibleClass = "visible"
 	var invisibleClass = "invisible"
 	var run = true
-	var throttleDuration = 300 //in milliseconds
+	var throttleDuration = 500 //in milliseconds
 	nodes = (nodes)? nodes : document.getElementsByClassName(defaultClass)
 	for(var i = 0; i < nodes.length; i++){
 		changeClass(nodes[i],"",[invisibleClass,defaultClass])
