@@ -339,17 +339,27 @@ function miniTab(cb,opener,closeCB){
     this.addOpener(opener)
 }
 function slider(container){
-    /*constructor for sliders*/
+    /*constructor for sliders
+     The container parameter specifies the parent to append the slider to when it is initiated
+    */
     var self = this
     var sliderContainer = document.createElement("div");
     sliderContainer.className = "slider-container"
     var slider = document.createElement("div"); slider.className = "slide"
     var forwardBtn = document.createElement("a"); forwardBtn.innerHTML = "&#8250;";
     forwardBtn.className = "nav-btn round right pointer";
-    var backBtn = forwardBtn.cloneNode(true); backBtn.innerHTML = "&#8249;"; changeClass(backBtn,"right","left")
+    var backBtn = forwardBtn.cloneNode(true); backBtn.innerHTML = "&#8249;"; 
+    changeClass(backBtn,"right","left")
     forwardBtn.onclick = function(){self.move(true)}
     backBtn.onclick = function(){self.move(false)}
-    append(sliderContainer,[slider,backBtn,forwardBtn])
+    var indicator = document.createElement("div")
+    indicator.className = "slider-indicator"
+    append(sliderContainer,[slider,backBtn,forwardBtn,indicator])
+    var indicatorItemProto = document.createElement("button"); 
+    indicatorItemProto.className = "round space-left item"
+    indicatorItemProto.style.width = "10px"
+    indicatorItemProto.style.height = "10px"
+    indicatorItemProto.style.padding = "0"
 
     this.sliderContainer = sliderContainer
     this.slider = slider
@@ -357,14 +367,16 @@ function slider(container){
     this.backBtn = backBtn
     this.container = container
     this.currentItem = 0
+    this.indicator = indicator
 
     this.add = function(item){
         /*add an item to the slider*/
         changeClass(item,"","item")
         this.slider.appendChild(item)
+        this.indicator.appendChild(indicatorItemProto.cloneNode(true))
     }
     this.display = function(){
-        this.sliderContainer.onload = function(){console.log(this)}
+        this.sliderContainer.onload = function(){}
         this.container.appendChild(this.sliderContainer)
         //remove the scroll bar
         this.slider.style.overflow = "hidden"
@@ -376,23 +388,52 @@ function slider(container){
         this.forwardBtn.style.top = topPercent.toString() + "%"
         this.backBtn.style.top = this.forwardBtn.style.top
         this.navCheck()
+        changeClass(this.indicator.children[this.currentItem],"","current")
     }
     this.move = function(dir){
         var items = this.slider.children
+        var indicatorItems = this.indicator.children
         var nextItem = (dir)? this.currentItem + 1 : this.currentItem - 1;
+        var currentItem = this.currentItem
+        var currentElem = items[currentItem]
         if(nextItem in items){
-            if(dir){items[this.currentItem].style.display = "none"}
-            else{items[nextItem].style.display = ""}
+            var nextElem = items[nextItem]
+            var sliderWidth = elementDim(this.slider,"w")
+            if(dir){
+                moveBy(currentElem,-1 * sliderWidth,0)
+                moveBy(nextElem,-1 * sliderWidth,0)
+            }
+            else{
+                orgPos(currentElem)
+                orgPos(nextElem)
+            }
+            changeClass(indicatorItems[this.currentItem],"current","")
+            changeClass(indicatorItems[nextItem],"","current")
             this.currentItem = nextItem
         }
-        this.navCheck()
+        return this.navCheck()
     }
     this.navCheck = function(){
         var items = this.slider.children
-        if(this.currentItem < 1){changeClass(this.backBtn,"","none")}
+        var end = false
+        if(this.currentItem < 1){changeClass(this.backBtn,"","none"); end = "l"}
         else{changeClass(this.backBtn,"none","")}
-        if(this.currentItem >= items.length - 1){changeClass(this.forwardBtn,"","none")}
+        if(this.currentItem >= items.length - 1){changeClass(this.forwardBtn,"","none"); end = "r"}
         else{changeClass(this.forwardBtn,"none","")}
+        return end
+    }
+    this.slideShow = function(interval){
+        interval = (isNumeric(interval))? interval : 5000
+        this.slideId = setInterval(play,interval)
+        function play(){
+            var end = self.move(true)
+            if(end == "r"){
+                self.stopSlide()   
+            }
+        }
+    }
+    this.stopSlide = function(){
+        clearInterval(this.slideId)
     }
 }
 
@@ -444,7 +485,7 @@ function write(node,parent,delay,cursorColor){
         }
         var childNodes = node.childNodes
         var nodeCopy = node.cloneNode(true)
-        nodeCopy.innerHTML = ""; 
+        nodeCopy.innerHTML = ""; nodeCopy.onclick = node.onclick
         parent.appendChild(nodeCopy);
         if(childNodes.length > 0){
             var currentNode = parseNode(childNodes[0])
