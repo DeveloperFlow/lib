@@ -398,14 +398,11 @@ function slider(container){
         var currentElem = items[currentItem]
         if(nextItem in items){
             var nextElem = items[nextItem]
-            var sliderWidth = elementDim(this.slider,"w")
             if(dir){
-                moveBy(currentElem,-1 * sliderWidth,0)
-                moveBy(nextElem,-1 * sliderWidth,0)
+                changeClass(currentElem,"","not-current")
             }
             else{
-                orgPos(currentElem)
-                orgPos(nextElem)
+                changeClass(nextElem,"not-current","")
             }
             changeClass(indicatorItems[this.currentItem],"current","")
             changeClass(indicatorItems[nextItem],"","current")
