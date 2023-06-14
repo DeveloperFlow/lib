@@ -343,23 +343,17 @@ function slider(container){
      The container parameter specifies the parent to append the slider to when it is initiated
     */
     var self = this
-    var sliderContainer = document.createElement("div");
-    sliderContainer.className = "slider-container"
+    var sliderContainer = document.createElement("div"); sliderContainer.className = "slider-container"
     var slider = document.createElement("div"); slider.className = "slide"
     var forwardBtn = document.createElement("a"); forwardBtn.innerHTML = "&#8250;";
     forwardBtn.className = "nav-btn round right pointer";
-    var backBtn = forwardBtn.cloneNode(true); backBtn.innerHTML = "&#8249;"; 
-    changeClass(backBtn,"right","left")
-    forwardBtn.onclick = function(){self.move(true)}
-    backBtn.onclick = function(){self.move(false)}
-    var indicator = document.createElement("div")
-    indicator.className = "slider-indicator"
+    var backBtn = forwardBtn.cloneNode(true); backBtn.innerHTML = "&#8249;";changeClass(backBtn,"right","left")
+    forwardBtn.onclick = function(){self.move(true)}; backBtn.onclick = function(){self.move(false)}
+    var indicator = document.createElement("div"); indicator.className = "slider-indicator"
     append(sliderContainer,[slider,backBtn,forwardBtn,indicator])
     var indicatorItemProto = document.createElement("button"); 
-    indicatorItemProto.className = "round space-left item"
-    indicatorItemProto.style.width = "10px"
-    indicatorItemProto.style.height = "10px"
-    indicatorItemProto.style.padding = "0"
+    indicatorItemProto.className = "round space-left item"; indicatorItemProto.style.width = "10px"
+    indicatorItemProto.style.height = "10px"; indicatorItemProto.style.padding = "0"
 
     this.sliderContainer = sliderContainer
     this.slider = slider
@@ -370,13 +364,18 @@ function slider(container){
     this.indicator = indicator
 
     this.add = function(item){
-        /*add an item to the slider*/
-        changeClass(item,"","item")
-        this.slider.appendChild(item)
+        /*add an item to the slider,
+        all items to be added to the slider must be added through this method, if not you may notice
+        unexpected behaviour from the slider
+        */
+        changeClass(item,"","item"); this.slider.appendChild(item)
         this.indicator.appendChild(indicatorItemProto.cloneNode(true))
+        addEvent(item,"touchstart",function(e){self.touchHandle(e,"start")})
+        addEvent(item,"touchend",function(e){self.touchHandle(e,"end")})
+        addEvent(item,"touchmove",function(e){self.touchHandle(e,"move")})
     }
     this.display = function(){
-        this.sliderContainer.onload = function(){}
+        /*displays the slider in the specified parent element*/
         this.container.appendChild(this.sliderContainer)
         //remove the scroll bar
         this.slider.style.overflow = "hidden"
@@ -390,25 +389,127 @@ function slider(container){
         this.navCheck()
         changeClass(this.indicator.children[this.currentItem],"","current")
     }
+    this.translate = function(element,x){
+        element.style.transform = "translate(" + x.toString() + "px)" 
+    }
     this.move = function(dir){
+        /*changes the current element of the slider
+        **parameters**
+            dir => the dir property specifies what the next element should be
+            it has boolean value where true means the next element while false means the previous element
+        */
         var items = this.slider.children
         var indicatorItems = this.indicator.children
-        var nextItem = (dir)? this.currentItem + 1 : this.currentItem - 1;
         var currentItem = this.currentItem
+        var nextItem = (dir)? currentItem + 1 : currentItem - 1;
         var currentElem = items[currentItem]
         if(nextItem in items){
-            var nextElem = items[nextItem]
-            if(dir){
-                changeClass(currentElem,"","not-current")
-            }
-            else{
-                changeClass(nextElem,"not-current","")
-            }
-            changeClass(indicatorItems[this.currentItem],"current","")
+            var nextElem = items[nextItem]; 
+            var currentElemX = this.orgPos(currentElem)
+            var nextElemX = this.orgPos(nextElem)
+            var sliderCoord = this.slider.getBoundingClientRect(); 
+            var ndx = sliderCoord.left - nextElemX
+            changeClass(currentElem,"no-transition",""); changeClass(nextElem,"no-transition","")
+            var cw = elementDim(currentElem,"w")
+            if(dir){var cdx = (sliderCoord.left - cw) - currentElemX}
+            else{var cdx = sliderCoord.right - currentElemX}
+            this.translate(currentElem,cdx); this.translate(nextElem,ndx)
+            changeClass(indicatorItems[currentItem],"current","")
             changeClass(indicatorItems[nextItem],"","current")
             this.currentItem = nextItem
+            this.organizeNext(dir)
         }
         return this.navCheck()
+    }
+    this.touchHandle = function(e,type){
+        stopDefault(e)
+        var items = this.slider.children
+        var currentElem = items[this.currentItem]
+        var touch = (type == "move")? e.touches : e.changedTouches
+        var x = touch[0].screenX
+        if(this.formalX == undefined){this.formalX = x}
+        var dx = x - this.formalX
+        this.formalX = x
+        if(type == "start"){return}
+        var nextItem; var altItem
+        if(dx < 0){
+            nextItem =  this.currentItem + 1; altItem = this.currentItem - 1;
+        }
+        else if(dx > 0){
+            var nextItem = this.currentItem - 1; var altItem = this.currentItem + 1;
+        }
+        else if(type == "move"){console.log("zero motion"); return}
+
+        if(type == "end"){
+            this.formalX = undefined
+            var sliderCoord = this.slider.getBoundingClientRect()
+            var currentCoord = currentElem.getBoundingClientRect()
+            if(currentCoord.right < sliderCoord.right){
+                //foward
+                this.move(true)
+            }
+            else if(currentCoord.left > sliderCoord.left){
+                this.move(false)
+            }
+            return
+        }
+
+        var nextElem; var altElem
+        if(nextItem in items){nextElem = items[nextItem]}
+        else if(altItem in items){altElem = items[altItem]; nextElem = altElem}
+        else{console.log("just one element"); return}
+
+        if(type == "move"){
+            changeClass(currentElem,"","no-transition")
+            changeClass(nextElem,"","no-transition")
+
+            var orgCurrent = this.orgPos(currentElem)
+            var orgNext = this.orgPos(nextElem)
+            
+            var currentCoord = currentElem.getBoundingClientRect()
+            var nextCoord = nextElem.getBoundingClientRect()
+
+            var cdx = currentCoord.left + dx
+            var ndx = nextCoord.left + dx
+            if(altElem){
+                //make sure that the element doesn't go out of bounds
+                var sliderCoord = this.slider.getBoundingClientRect()
+                if(dx > 0){
+                    if(sliderCoord.left <= cdx){cdx = sliderCoord.left; ndx = sliderCoord.right}
+                }
+                else{
+                    if(sliderCoord.right >= cdx){cdx = sliderCoord.right; ndx = sliderCoord.left}
+                }
+            }
+            cdx -= orgCurrent; ndx -= orgNext
+            
+            currentElem.style.transform = "translate(" + cdx.toString() + "px)"
+            nextElem.style.transform = "translate(" + ndx.toString() + "px)"
+        }
+    }
+    this.organizeNext = function(dir){
+        if(!dir){return}
+        var nextItem = this.currentItem + 1
+        var items = this.slider.children
+        if(nextItem in items){
+            var nextElem = items[nextItem]
+            changeClass(nextElem,"","no-transition")
+            var coord = this.orgPos(nextElem)
+            var sliderCoord = this.slider.getBoundingClientRect()
+            var dx = sliderCoord.right - coord
+            nextElem.style.transform = "translate(" + dx.toString() + "px)"
+        }
+    }
+    this.orgPos = function(currentElem){
+        var style = currentElem.style.transform
+        if(!style){style = 0}
+        else{
+            style = style.slice(style.indexOf("(") + 1,-3)
+            style = Number(style)
+        }
+        var coord = currentElem.getBoundingClientRect()
+        var orgX = coord.left - style
+        return orgX
     }
     this.navCheck = function(){
         var items = this.slider.children
