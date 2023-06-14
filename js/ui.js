@@ -389,9 +389,7 @@ function slider(container){
         this.navCheck()
         changeClass(this.indicator.children[this.currentItem],"","current")
     }
-    this.translate = function(element,x){
-        element.style.transform = "translate(" + x.toString() + "px)" 
-    }
+    this.translate = function(element,x){element.style.transform = "translate(" + x.toString() + "px)"}
     this.move = function(dir){
         /*changes the current element of the slider
         **parameters**
@@ -422,6 +420,7 @@ function slider(container){
         return this.navCheck()
     }
     this.touchHandle = function(e,type){
+        /*handles touch events so users can slide the slider*/
         stopDefault(e)
         var items = this.slider.children
         var currentElem = items[this.currentItem]
@@ -431,17 +430,14 @@ function slider(container){
         var dx = x - this.formalX
         this.formalX = x
         if(type == "start"){return}
-        var nextItem; var altItem
-        if(dx < 0){
-            nextItem =  this.currentItem + 1; altItem = this.currentItem - 1;
-        }
-        else if(dx > 0){
-            var nextItem = this.currentItem - 1; var altItem = this.currentItem + 1;
-        }
-        else if(type == "move"){console.log("zero motion"); return}
+        var nextItem
+        if(dx < 0){nextItem =  this.currentItem + 1}
+        else if(dx > 0){nextItem = this.currentItem - 1}
+        else if(type == "move"){return}
 
         if(type == "end"){
             this.formalX = undefined
+            this.focusedNext = undefined
             var sliderCoord = this.slider.getBoundingClientRect()
             var currentCoord = currentElem.getBoundingClientRect()
             if(currentCoord.right < sliderCoord.right){
@@ -454,15 +450,17 @@ function slider(container){
             return
         }
 
-        var nextElem; var altElem
-        if(nextItem in items){nextElem = items[nextItem]}
-        else if(altItem in items){altElem = items[altItem]; nextElem = altElem}
-        else{console.log("just one element"); return}
+        var nextElem; var supposedNext
+        if(nextItem in items){supposedNext = items[nextItem]}
+        if(supposedNext && this.focusedNext == undefined){nextElem = supposedNext}
+        else if(this.focusedNext != undefined){nextElem = this.focusedNext}
+        else{console.log("next item doesn't exist"); return}
 
         if(type == "move"){
             changeClass(currentElem,"","no-transition")
             changeClass(nextElem,"","no-transition")
 
+            this.focusedNext = nextElem
             var orgCurrent = this.orgPos(currentElem)
             var orgNext = this.orgPos(nextElem)
             
@@ -471,20 +469,34 @@ function slider(container){
 
             var cdx = currentCoord.left + dx
             var ndx = nextCoord.left + dx
-            if(altElem){
-                //make sure that the element doesn't go out of bounds
-                var sliderCoord = this.slider.getBoundingClientRect()
-                if(dx > 0){
-                    if(sliderCoord.left <= cdx){cdx = sliderCoord.left; ndx = sliderCoord.right}
+
+            if(supposedNext == undefined){
+                //keep the element in bounds
+                var sliderCoord = this.slider.getBoundingClientRect(); 
+                if(dx < 0){
+                    if(sliderCoord.right >= cdx){cdx = sliderCoord.left; ndx = sliderCoord.left - nextElem.clientWidth}
                 }
                 else{
-                    if(sliderCoord.right >= cdx){cdx = sliderCoord.right; ndx = sliderCoord.left}
+                    if(sliderCoord.left <= cdx){cdx = sliderCoord.left; ndx = sliderCoord.right}
+                }
+            }
+            else if(supposedNext != nextElem){
+                var sliderCoord = this.slider.getBoundingClientRect()
+                if(dx < 0){
+                    if(sliderCoord.left >= cdx){
+                        cdx = sliderCoord.left; ndx = sliderCoord.left - nextElem.clientWidth
+                        this.focusedNext = supposedNext
+                    }
+                }
+                else{
+                    if(sliderCoord.left <= cdx){
+                        cdx = sliderCoord.left; ndx = sliderCoord.right;
+                        this.focusedNext = supposedNext
+                    }
                 }
             }
             cdx -= orgCurrent; ndx -= orgNext
-            
-            currentElem.style.transform = "translate(" + cdx.toString() + "px)"
-            nextElem.style.transform = "translate(" + ndx.toString() + "px)"
+            this.translate(currentElem,cdx); this.translate(nextElem,ndx)
         }
     }
     this.organizeNext = function(dir){
@@ -519,6 +531,9 @@ function slider(container){
         if(this.currentItem >= items.length - 1){changeClass(this.forwardBtn,"","none"); end = "r"}
         else{changeClass(this.forwardBtn,"none","")}
         return end
+    }
+    this.adjust = function(){
+        /*the slider operates with transition, so a function to adjust the slider incase of screen resize*/
     }
     this.slideShow = function(interval){
         interval = (isNumeric(interval))? interval : 5000
