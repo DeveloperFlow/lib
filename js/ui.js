@@ -1,6 +1,6 @@
 /*library for managing user interfaces*/
 
-var a = function(){
+var _$ = function(){
     var tabInstance = new tab()
     options.prototype = tabInstance
     miniTab.prototype  = tabInstance    
