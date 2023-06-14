@@ -474,7 +474,7 @@ function slider(container){
                 //keep the element in bounds
                 var sliderCoord = this.slider.getBoundingClientRect(); 
                 if(dx < 0){
-                    if(sliderCoord.right >= cdx){cdx = sliderCoord.left; ndx = sliderCoord.left - nextElem.clientWidth}
+                    if(sliderCoord.left >= cdx){cdx = sliderCoord.left; ndx = sliderCoord.left - nextElem.clientWidth}
                 }
                 else{
                     if(sliderCoord.left <= cdx){cdx = sliderCoord.left; ndx = sliderCoord.right}
