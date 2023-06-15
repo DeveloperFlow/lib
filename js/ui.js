@@ -388,6 +388,8 @@ function slider(container){
         this.backBtn.style.top = this.forwardBtn.style.top
         this.navCheck()
         changeClass(this.indicator.children[this.currentItem],"","current")
+        changeClass(this.slider.children[this.currentItem],"","current")
+        addEvent(window,"resize",function(){self.adjust()})
     }
     this.translate = function(element,x){element.style.transform = "translate(" + x.toString() + "px)"}
     this.move = function(dir){
@@ -412,6 +414,7 @@ function slider(container){
             if(dir){var cdx = (sliderCoord.left - cw) - currentElemX}
             else{var cdx = sliderCoord.right - currentElemX}
             this.translate(currentElem,cdx); this.translate(nextElem,ndx)
+            changeClass(currentElem,"current",""); changeClass(nextElem,"","current")
             changeClass(indicatorItems[currentItem],"current","")
             changeClass(indicatorItems[nextItem],"","current")
             this.currentItem = nextItem
@@ -534,6 +537,14 @@ function slider(container){
     }
     this.adjust = function(){
         /*the slider operates with transition, so a function to adjust the slider incase of screen resize*/
+        var container = this.slider
+        var items = container.children
+        if(this.currentItem in items){
+            var currentElem = items[this.currentItem]
+            var c = this.orgPos(currentElem); var coord = container.getBoundingClientRect()
+            var dx = coord.left - c
+            this.translate(currentElem,dx)
+        }
     }
     this.slideShow = function(interval){
         interval = (isNumeric(interval))? interval : 5000
