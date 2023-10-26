@@ -1,4 +1,5 @@
 function Req(url,method,message){
+    if(!message){message = {}}
     this.object = new XMLHttpRequest(); this.url = url
     this.stimulis = [
         "onload","onabort","ontimeout","onloadend","onerror",
@@ -11,8 +12,7 @@ function Req(url,method,message){
 
     this.send = function(){
         var object = this.object
-        this.method = (inarray(this.validMethods,this.method))?this.method : 
-        this.defaultMethod
+        this.method = (inarray(this.validMethods,this.method))? this.method : this.defaultMethod
         if(this.loadClass){
             if(!(this.loadInterface instanceof this.loadClass)){
                 this.loadInterface = new this.loadClass(this.loadElement)
@@ -20,8 +20,7 @@ function Req(url,method,message){
             this.loadInterface.start()
         }
         object.open(this.method.toUpperCase(),this.url)
-        object.responseType = (this.responseType)? this.responseType : 
-        object.responseType
+        object.responseType = (this.responseType)? this.responseType : object.responseType
         if(equalString(this.method,"post")){
             object.setRequestHeader("Content-Type","application/x-www-form-urlencoded")
         }
@@ -37,8 +36,7 @@ function Req(url,method,message){
             if(self.loadInterface && self.loadInterface instanceof progress && stimuli == "onprogress"){
                 var totalDataVol = e.total
                 var loadedDataVol = e.loaded
-                var loadedRatio = totalDataVol / loadedDataVol
-                var loadProgress = loadedRatio * self.loadInterface.max
+                var loadProgress = (loadedDataVol * self.loadInterface.max) / totalDataVol
                 self.loadInterface.makeProgress(loadProgress)
             }
             if(self.object.readyState == 4 && self.loadClass){
@@ -53,7 +51,10 @@ function Req(url,method,message){
         var message = this.message
         var messageList = []
         for(key in message){
-            messageList.push(key.toString() + "=" + message[key].toString())
+            var value = message[key]
+            if(value === null || value === undefined || value === false){value = ""}
+            else if(value instanceof Object){value = JSON.stringify(value)}
+            messageList.push(key.toString() + "=" + value.toString())
         }
         return messageList.join("&")
     }
