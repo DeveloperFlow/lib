@@ -1,0 +1,16 @@
+.button{background-image: none; background-color: #75c2af; display:block;
+padding:3%; color:#fff; border-radius:25px; border:none}
+.color{color:#91177a}
+a{text-decoration: none;}
+
+*:disabled{cursor:not-allowed; opacity:0.4}
+.dp{border:1px solid #75c2af;}
+.dp-small{width:30vw; height:30vw; max-width:50px; max-height: 50px; object-fit: contain;}
+
+/*dark theme*/
+body.dark-theme{
+    background-color: #2b2a33;
+}
+body.dark-theme *{color:#fff}
+body.dark-theme input{color:#444}
+body.dark-theme button.nav-btn{color:#75c2af}
