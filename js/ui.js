@@ -152,11 +152,12 @@ function Confirm(message,onconfirm,ondecline,confirmText,declineText){
     }
 }
 function semiTab(cb,opener,closeCB){
-    this.tab = new miniTab(cb,opener,closeCB); this.tab.tab.className = "semitab"
-    this.tab.smallScreen = function(){
+    this.tabObject= new miniTab(cb,opener,closeCB); this.tabObject.tab.className = "semitab"
+    this.tabObject.smallScreen = function(){
     }
-    this.tab.bigScreen = function(){
+    this.tabObject.bigScreen = function(){
     }
+    this.tab = this.tabObject.tab
 }
 function miniTab(cb,opener,closeCB){
     /*constructor for minitabs
@@ -185,7 +186,7 @@ function miniTab(cb,opener,closeCB){
         addEvent(window,"resize",resize); if(isFunction(this.cb)){this.cb()}
     }
     this.adjust = function(){
-        var wdim = windowDim();
+        var wdim = windowDim(); 
         if(this.screenThreshold > wdim.w){
             this.smallScreen(wdim)
         }
@@ -682,8 +683,10 @@ function slider(container){
     }
 }
 
-function write(node,parent,finishCB,delay,cursorColor){
-    var cursor = document.createElement("span"); cursor.innerHTML = "|"; cursor.className = "blink"
+function write(node,parent,finishCB,delay,cursorColor,cursorChar){
+    var cursor = document.createElement("span"); 
+    cursorChar = (cursorChar)? cursorChar : "|"
+    cursor.innerHTML = cursorChar; cursor.className = "blink"
     delay = (delay == undefined)? 100 : delay // in milliseconds
     var nodeMap = []
     try{

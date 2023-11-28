@@ -10,14 +10,11 @@ z-index:5}
 }
 
 /*semi tab*/
-.semitab{width: 100%; max-width: 500px; height: 100%; overflow: auto;}
+.semitab{width: 100%; max-width: 500px; height: 100%; overflow: auto; margin: auto; z-index: 5; position: relative;
+padding: 2%;}
 /*mini tabs*/
 .minitab{width:100%; overflow:auto; max-height:90%; z-index:5; 
-    background-color: #fff; padding:1%; border-radius: 8px;
-}
-.minitab .cancel-btn{font-size:16px; width:30px; height:30px; border-radius:25px; border:1px solid #f00;
-background-color:#fff
-}
+    background-color: #fff; padding:1%; border-radius: 8px;}
 .bigscreen-minitab{max-width:700px; height:600px; margin:auto; position: relative;}
 .smallscreen-minitab{border-radius:25px 25px 0px 0px; padding:3%}
 
@@ -60,18 +57,3 @@ position:absolute; z-index: 2;}
 .yotta-notification .yotta-notification-top .yotta-notification-close{color:#fff; font-weight: bold; font-size:14px;
 cursor:pointer}
 .yotta-notification .yotta-notification-message{color:#fff; padding:0% 2% 2% 2%; font-size: 15px;}
-
-/*calendar*/
-.calendar{font-size: 14px;}
-.calendar .dir-btn{width:30px; height:30px; background-color: transparent; border:none; 
-    border-width: 1px; border-style: solid;}
-.calendar .opener:hover{text-decoration: underline; color:#75c2af}
-.calendar .months{text-transform: capitalize;}
-.calendar .dates{text-transform: capitalize;}
-.calendar .dates .current{background-color: #75c2af;}
-.calendar .year-interface{max-height: 150px; overflow: auto; text-align: center;}
-.calendar .year-interface .year.current{background-color: #75c2af;}
-.calendar .year-interface .year{display: inline-block; width:23%; margin-left: 2%;}
-.calendar .month-interface .month{display:inline-block; width:31%; margin-left:2%; padding:2%;
-text-transform: capitalize;}
-.calendar .month-interface .current{background-color: #75c2af;}
