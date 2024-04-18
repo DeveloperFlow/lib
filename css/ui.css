@@ -15,6 +15,13 @@ padding: 2%;}
 /*mini tabs*/
 .minitab{width:100%; overflow:auto; max-height:90%; z-index:5; 
     background-color: #fff; padding:1%; border-radius: 8px;}
+.minitab .cancel-btn{
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  text-align: center;
+  border: 1px solid #75c2af;
+}
 .bigscreen-minitab{max-width:700px; height:600px; margin:auto; position: relative;}
 .smallscreen-minitab{border-radius:25px 25px 0px 0px; padding:3%}
 
