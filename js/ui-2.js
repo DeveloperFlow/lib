@@ -220,3 +220,204 @@ function expandable(element,maxWidth,maxHeight,minWidth,minHeight,areas,cb){
         this.dragStart = false
     }
 }
+
+function calendar(latestYear,lastYear,currentYear,currentMonth,currentDate){
+    var self = this
+    var d = new Date(); this.dateObject = d
+    var days = ["sun","mon","tue","wed","thur","fri","sat"]
+    var months = ["january","february","march","april","may","june","july","august","september","october",
+    "november","december"]
+    var monthEls = []
+    latestYear = (latestYear)? latestYear : d.getFullYear() + 300
+    lastYear = (lastYear)? lastYear : 1800;
+    if(currentYear){d.setFullYear(currentYear)}
+    if(currentMonth){d.setMonth(currentMonth)}
+    if(currentDate){d.setDate(currentDate)}
+
+    this.container = document.createElement("div"); this.container.className = "calendar auto-margin minor-pad curved"
+    this.container.style.borderWidth = "1px"; this.container.style.borderStyle = "solid"
+    this.container.style.maxWidth = "400px"
+    var year = document.createElement("div"); year.className  = "flex vcenter hcenter"
+    var nextYear = document.createElement("button"); nextYear.className = "round dir-btn pointer"
+    nextYear.type = "button"
+    var prevYear = nextYear.cloneNode(true); prevYear.type = "button"
+    nextYear.innerHTML = ">"; nextYear.className += " space-left"; prevYear.innerHTML = "<"
+    var yearLabel = document.createElement("span"); yearLabel.innerHTML = d.getFullYear();
+    yearLabel.className = "space-left year pointer opener"
+    append(year,[prevYear,yearLabel,nextYear])
+    var month = year.cloneNode(true); month.className += " space-up months"
+    var nextMonth = month.children[2]; var prevMonth = month.children[0]
+    nextMonth.type = "button"; prevMonth.type = "button"
+    var monthLabel = month.children[1]; monthLabel.innerHTML = months[d.getMonth()]
+    var date = document.createElement("table"); date.className = "space-up dates full-width center-text"
+    append(this.container,[year,month,date])
+    this.currentInterface = date
+    addEvent(yearLabel,"click",yearInterface); addEvent(monthLabel,"click",monthInterface)
+    addEvent(nextYear,"click",changeYear); addEvent(prevYear,"click",changeYear)
+    addEvent(nextMonth,"click",changeMonth); addEvent(prevMonth,"click",changeMonth)
+
+    this.setStyle = function(style,value){
+        this.container.style[style] = value
+    }
+    this.showDates = function(){
+        //the days
+        date.innerHTML = ""
+        var daysRows = document.createElement("tr")
+        date.appendChild(daysRows)
+        for(var i = 0; i < days.length; i++){
+            var dayEl = document.createElement("td");
+            dayEl.innerHTML = days[i]; daysRows.appendChild(dayEl)
+        }
+        var dateCount = 1; var t = 0
+        var dateObj = this.dateObject
+        var d = new Date(); d.setFullYear(dateObj.getFullYear()); d.setMonth(dateObj.getMonth())
+        var stillSameMonth = true
+        while(stillSameMonth){
+            var row = document.createElement("tr")
+            for(var i = 0; i < days.length; i++){
+                d.setDate(dateCount)
+                stillSameMonth = (d.getMonth() == dateObj.getMonth())
+                if(!stillSameMonth){break}
+                var thisDate = document.createElement("td"); thisDate.className = "pointer list-item"
+                row.appendChild(thisDate)
+                if(d.getDay() == i){
+                    thisDate.innerHTML = dateCount
+                    if(dateCount == dateObj.getDate()){
+                        thisDate.className += " current"; this.currentDate = thisDate
+                    }
+                    this.addDateUpdateEvt(thisDate,dateCount)
+                    dateCount++
+                }
+                else{thisDate.style.visibility = "hidden"}
+            }
+            date.appendChild(row)
+            t++
+            if(t > 32){console.error("date fail"); break}
+        }
+    }
+    this.addDateUpdateEvt = function(el,date){
+        var self = this
+        addEvent(el,"click",function(){
+            var dateObject = self.dateObject
+            dateObject.setDate(date)
+            changeClass(self.currentDate,"current","")
+            changeClass(el,"","current")
+            self.currentDate = el
+            self.dateChangeEvt()
+        })
+    }
+    this.addYearUpdateEvt = function(el,year){
+        addEvent(el,"click",function(){
+            var d = self.dateObject; d.setFullYear(year)
+            if(self.currentYear){changeClass(self.currentYear,"current","")}
+            changeClass(el,"","current")
+            self.currentYear = el
+            yearLabel.innerHTML = year
+            monthInterface()
+            self.dateChangeEvt()
+        })
+    }
+    this.addMonthUpdateEvt = function(el,i){
+        addEvent(el,"click",function(){
+            self.changeMonth(i)
+        })
+    }
+    this.changeMonth = function(i){
+        var d = self.dateObject; var cm = d.getMonth(); d.setMonth(i)
+        if(self.monthInterface && this.currentInterface === self.monthInterface){
+            var el = monthEls[i]
+            changeClass(monthEls[cm],"current","")
+            changeClass(el,"","current")
+        }
+        monthLabel.innerHTML = months[i]
+        self.showDates()
+        self.openInterface(date)
+        this.dateChangeEvt()
+    }
+    this.yearSection = function(i){
+        var end = 27 + i;
+        if((i < this.yearSectionStart && end < lastYear) ||
+        (i > this.yearSectionEnd && this.yearSectionEnd >= latestYear)){
+            return
+        }
+        this.yearSectionStart = i; this.yearSectionEnd = end
+        this.yearInterface.innerHTML = ""
+        for(var i = i; i <= end; i++){
+            if(i > latestYear){break}
+            var thisYear = document.createElement("div"); thisYear.className = "year list-item pointer"
+            thisYear.innerHTML = i; this.yearInterface.appendChild(thisYear)
+            if(this.dateObject.getFullYear() == i){
+                thisYear.className += " current"; this.currentYear = thisYear
+            }
+            this.addYearUpdateEvt(thisYear,i)
+        }
+    }
+    this.openInterface = function(el){
+        remove(this.currentInterface)
+        this.container.appendChild(el)
+        this.currentInterface = el
+    }
+    this.dateChangeEvt = function(){
+        if(this.ondatechange){
+            this.ondatechange(this)
+        }
+    }
+    this.open = function(parent){
+        addEvent(window,"resize",adjust)
+        parent.appendChild(this.container)
+    }
+    this.close = function(){
+        removeEvent(window,"resize",adjust)
+        remove(this.container)
+    }
+    function changeYear(){
+        var dir = (this === nextYear)? 1 : 0;
+        if(self.yearInterface && self.currentInterface === self.yearInterface){
+            var i = dir? self.yearSectionEnd + 1 : self.yearSectionStart - 28;
+            self.yearSection(i)
+        }
+        else{
+            var cy = self.dateObject.getFullYear()
+            cy = (dir)? cy + 1 : cy - 1;
+            if(cy > latestYear || cy < lastYear){return}
+            yearLabel.innerHTML = cy
+            self.dateObject.setFullYear(cy)
+        }
+    }
+    function yearInterface(){
+        if(!self.yearInterface){
+            self.yearInterface = document.createElement("div"); self.yearInterface.className = "year-interface"
+        }
+        var i = (Math.floor((self.dateObject.getFullYear() - lastYear) / 28) * 28) + lastYear
+        self.yearSection(i,1); self.openInterface(self.yearInterface)
+    }
+    function monthInterface(){
+        if(!self.monthInterface){
+            self.monthInterface = document.createElement("div"); self.monthInterface.className = "month-interface"
+        }
+        monthEls = []; self.monthInterface.innerHTML = ""; var cm = self.dateObject.getMonth()
+        for(var i = 0; i < months.length; i++){
+            var thisMonth = document.createElement("div"); 
+            thisMonth.className = "month list-item pointer oneline ellipsis"
+            thisMonth.innerHTML = months[i]
+            self.monthInterface.appendChild(thisMonth)
+            monthEls.push(thisMonth)
+            self.addMonthUpdateEvt(thisMonth,i)
+            if(i == cm){thisMonth.className += " current"}
+        }
+        self.openInterface(self.monthInterface)
+    }
+    function changeMonth(){
+        var dir = (this === nextMonth)? 1 : 0
+        var d = self.dateObject; 
+        var cm = d.getMonth(); var nm = (dir)? cm + 1 : cm - 1;
+        if(nm >= months.length){nm = months.length - 1}
+        else if(nm < 0){nm = 0}
+        self.changeMonth(nm)
+    }
+    function adjust(){
+        var calendarDim = elementDim(self.container)
+        if(calendarDim.w == 0){return}
+    }
+    this.showDates()
+}

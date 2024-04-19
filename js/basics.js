@@ -199,11 +199,10 @@ function inView(element){
 	/*checks if an element is in the visible view port*/
 	var coord = element.getBoundingClientRect()
 	var winDim = windowDim()
-	var topVisible = coord.top >= 0 && coord.top <= winDim.h
-	var bottomVisible = coord.bottom >= 0 && coord.bottom <= winDim.h
-	var leftVisible = coord.left >= 0 && coord.left <= winDim.w
-	var rightVisible = coord.right >= 0 && coord.right <= winDim.w
-	console.log(coord)
+	var topVisible = coord.top > 0 && coord.top < winDim.h
+	var bottomVisible = coord.bottom > 0 && coord.bottom < winDim.h
+	var leftVisible = coord.left > 0 && coord.left < winDim.w
+	var rightVisible = coord.right > 0 && coord.right <winDim.w
 	return (topVisible || bottomVisible) && (leftVisible || rightVisible); 
 }
 function scrollNShow(nodes){
@@ -214,20 +213,19 @@ function scrollNShow(nodes){
 	var throttleDuration = 500 //in milliseconds
 	nodes = (nodes)? nodes : document.getElementsByClassName(defaultClass)
 	for(var i = 0; i < nodes.length; i++){
-		changeClass(nodes[i],"",defaultClass)
+		changeClass(nodes[i],"",[invisibleClass,defaultClass])
 	}
 	function appear(node){
-		changeClass(node,invisibleClass,visibleClass)
+		changeClass(node,"",visibleClass)
 	}
 	function disappear(node){
-		changeClass(node,visibleClass,invisibleClass)
+		changeClass(node,visibleClass,"")
 	}
 	function handleScroll(){
 		for(var i = 0; i < nodes.length; i++){
 			var node = nodes[i]
 			if(inView(node)){appear(node)}
 			else{disappear(node)}
-			console.log(node)
 		}
 	}
 	function scrollThrottle(){
@@ -235,7 +233,6 @@ function scrollNShow(nodes){
 		run = false
 		setTimeout(function(){run = true; handleScroll()},throttleDuration)
 	}
-	handleScroll()
 	addEvent(document,"scroll",scrollThrottle)
 }
 function getCookie(name){
